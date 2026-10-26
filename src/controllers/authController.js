@@ -3,12 +3,12 @@ const jwt = require('jsonwebtoken');
 const db = require('../db/init');
 
 function register(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   const hash = bcrypt.hashSync(password, 10);
   const result = db
     .prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)')
-    .run(name, email, hash, 'member');
+    .run(name, email, hash, role || 'member');
 
   const user = db.prepare('SELECT id, name, email, role FROM users WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(user);

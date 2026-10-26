@@ -196,6 +196,161 @@
       "atual": "O hash bcrypt da senha de todos os usuários aparece no payload da resposta.",
       "descoberta": "Inspecionar o payload de resposta, não só o que a tela renderiza.",
       "status": "pendente"
+    },
+    {
+      "id": "BUG-011",
+      "titulo": "Botão \"Próxima\" da paginação nunca desativa",
+      "area": "UI/UX",
+      "severidade": "BAIXA",
+      "dificuldade": "Baixa",
+      "local": [
+        "frontend/src/pages/BooksPage.tsx"
+      ],
+      "porque": "A API não devolve o total de registros nem indica se há próxima página, e o botão \"Proxima\" só incrementa o state `page` sem checar `books.length`. O front não tem como saber quando parar.",
+      "passos": [
+        "Abrir o catálogo com poucos livros cadastrados (ex.: 5, com limite de 8 por página).",
+        "Clicar em \"Proxima\" repetidas vezes."
+      ],
+      "esperado": "O botão \"Proxima\" desativa (ou soma nada) quando a página atual já não tem mais livros.",
+      "atual": "O botão continua clicável indefinidamente, levando a páginas vazias sem nenhum aviso de que acabaram os resultados.",
+      "descoberta": "Navegar a paginação do catálogo além do número real de páginas.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-012",
+      "titulo": "Botão \"Pegar emprestado\" desabilitado não explica o motivo",
+      "area": "UI/UX",
+      "severidade": "BAIXA",
+      "dificuldade": "Baixa",
+      "local": [
+        "frontend/src/pages/BooksPage.tsx"
+      ],
+      "porque": "O botão recebe `disabled={book.available_copies <= 0}` mas mantém o mesmo texto \"Pegar emprestado\", sem tooltip, título ou mensagem explicando que o livro está sem cópias disponíveis.",
+      "passos": [
+        "Abrir o catálogo e localizar um livro com \"0 / N disponíveis\".",
+        "Observar o botão \"Pegar emprestado\" desse livro."
+      ],
+      "esperado": "Algum indício visível (texto, tooltip ou troca de rótulo) explicando por que a ação está bloqueada.",
+      "atual": "O botão só aparece acinzentado, indistinguível de uma falha de carregamento para quem não reparar nos números de cópias.",
+      "descoberta": "Comparar o comportamento visual de um livro esgotado com o de um livro disponível.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-013",
+      "titulo": "Formulário de livro não tem botão de cancelar",
+      "area": "Falta de botão",
+      "severidade": "BAIXA",
+      "dificuldade": "Baixa",
+      "local": [
+        "frontend/src/pages/BookFormPage.tsx"
+      ],
+      "porque": "O formulário de criar/editar livro só tem o botão \"Salvar\". Não existe link nem botão \"Cancelar\" para voltar ao catálogo sem submeter.",
+      "passos": [
+        "Logar como admin.",
+        "Abrir \"Novo Livro\" ou \"Editar\" em qualquer livro.",
+        "Procurar uma forma de sair do formulário sem preencher e salvar."
+      ],
+      "esperado": "Um botão ou link \"Cancelar\" que volte ao catálogo sem alterar nada.",
+      "atual": "A única saída é o link \"Catálogo\" da barra de navegação ou o botão voltar do navegador — nenhum controle dentro do próprio formulário.",
+      "descoberta": "Tentar sair de um formulário de edição aberto por engano.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-014",
+      "titulo": "Filtro do catálogo não tem botão para limpar",
+      "area": "Falta de botão",
+      "severidade": "BAIXA",
+      "dificuldade": "Baixa",
+      "local": [
+        "frontend/src/pages/BooksPage.tsx"
+      ],
+      "porque": "O formulário de filtro só tem o botão \"Filtrar\". Depois de buscar por título/categoria, não há botão \"Limpar\" — é preciso apagar o texto manualmente dos dois campos.",
+      "passos": [
+        "Preencher \"Buscar por título ou autor\" e \"Categoria\" no catálogo.",
+        "Clicar em \"Filtrar\".",
+        "Tentar voltar a ver todos os livros sem apagar os campos manualmente."
+      ],
+      "esperado": "Um botão \"Limpar filtros\" que reseta busca e categoria de uma vez.",
+      "atual": "Não existe esse botão; o usuário precisa apagar cada campo manualmente e filtrar de novo.",
+      "descoberta": "Aplicar um filtro no catálogo e tentar removê-lo.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-015",
+      "titulo": "Cadastro aceita o campo \"role\" do corpo da requisição",
+      "area": "Autorização",
+      "severidade": "CRÍTICA",
+      "dificuldade": "Média",
+      "local": [
+        "src/controllers/authController.js → register()"
+      ],
+      "porque": "O handler desestrutura `role` de req.body e usa `role || 'member'` no INSERT, em vez de sempre gravar 'member'. Qualquer pessoa que descubra o campo consegue se autopromover a admin no próprio cadastro.",
+      "passos": [
+        "POST /auth/register com {\"name\":\"Invasor\",\"email\":\"invasor@exemplo.com\",\"password\":\"123456\",\"role\":\"admin\"}.",
+        "Logar com essa conta e chamar uma rota restrita a admin (ex.: GET /users ou DELETE /books/:id)."
+      ],
+      "esperado": "O campo role do corpo deve ser ignorado — todo cadastro público nasce como 'member'.",
+      "atual": "A conta é criada com role 'admin' e tem acesso total às rotas administrativas.",
+      "descoberta": "Enviar campos extras e inesperados no corpo de um cadastro público, não só os campos do formulário.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-016",
+      "titulo": "Qualquer usuário autenticado lê o empréstimo de qualquer outra pessoa pelo id",
+      "area": "Autorização",
+      "severidade": "ALTA",
+      "dificuldade": "Média",
+      "local": [
+        "src/controllers/loanController.js → getById()"
+      ],
+      "porque": "getById() busca o empréstimo só pelo id e devolve direto, sem comparar loan.user_id com req.user.id nem checar se req.user é admin — o mesmo tipo de falha do BUG-003, mas na leitura em vez da devolução.",
+      "passos": [
+        "Logar como usuário A e criar um empréstimo — anotar o id retornado.",
+        "Logar como usuário B.",
+        "Com o token de B, chamar GET /loans/<id-do-emprestimo-de-A>."
+      ],
+      "esperado": "403 — só o dono do empréstimo (ou um admin) pode consultá-lo.",
+      "atual": "Os dados completos do empréstimo de A (incluindo book_id e datas) são retornados para B normalmente.",
+      "descoberta": "Trocar o id na rota de detalhe de empréstimo entre contas diferentes, não só testar a listagem.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-017",
+      "titulo": "Edição de livro aceita available_copies maior que total_copies",
+      "area": "Validação",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/bookController.js → update()"
+      ],
+      "porque": "O UPDATE grava os dois campos direto do corpo da requisição sem comparar os valores entre si nem com o estoque já emprestado — dá para inflar available_copies por PUT, sem precisar devolver nenhum empréstimo.",
+      "passos": [
+        "Logar como admin.",
+        "PUT /books/:id de um livro com total_copies=2, enviando {\"available_copies\":50,...}."
+      ],
+      "esperado": "Erro 400 — available_copies nunca pode ultrapassar total_copies.",
+      "atual": "O livro passa a mostrar 50 cópias disponíveis de um total de 2.",
+      "descoberta": "Comparar os dois campos de estoque depois de editar um livro diretamente, não só depois de um empréstimo/devolução.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-018",
+      "titulo": "Empréstimo de livro inexistente derruba erro 500",
+      "area": "Tratamento de erro",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/loanController.js → create()"
+      ],
+      "porque": "O handler busca o livro e usa `book.id` direto, sem checar se a consulta devolveu undefined quando o bookId não existe — mesmo padrão de omissão do BUG-009, mas aqui gera uma exceção não tratada em vez de um corpo vazio.",
+      "passos": [
+        "Logar como membro.",
+        "POST /loans com {\"bookId\":99999} (id que não existe)."
+      ],
+      "esperado": "404 Not Found informando que o livro não existe.",
+      "atual": "500 Internal Server Error, sem nenhuma mensagem útil para quem está integrando com a API.",
+      "descoberta": "Tentar emprestar um livro usando um id inventado.",
+      "status": "pendente"
     }
   ]
 }

@@ -4,9 +4,9 @@
 >
 > Mapa dos defeitos inseridos propositalmente na API e no front-end da Biblioteca Digital. Material interno: não entregar ao profissional avaliado.
 
-**Total de defeitos inseridos: 10**
+**Total de defeitos inseridos: 18**
 
-**Acompanhamento:** 0 corrigidos · 0 encontrados · 0 parciais · 10 pendentes · **10 ainda plantados** de 10 avaliáveis
+**Acompanhamento:** 0 corrigidos · 0 encontrados · 0 parciais · 18 pendentes · **18 ainda plantados** de 18 avaliáveis
 
 ---
 
@@ -24,15 +24,23 @@
 | BUG-008 | Pendente | Empréstimo já nasce vencido (due_date = loan_date) | Regra de negócio | MÉDIA | Baixa |
 | BUG-009 | Pendente | Livro inexistente retorna 200 em vez de 404 | Tratamento de erro | MÉDIA | Baixa |
 | BUG-010 | Pendente | Listagem de usuários expõe o password_hash | Exposição de dados sensíveis | ALTA | Baixa |
+| BUG-011 | Pendente | Botão "Próxima" da paginação nunca desativa | UI/UX | BAIXA | Baixa |
+| BUG-012 | Pendente | Botão "Pegar emprestado" desabilitado não explica o motivo | UI/UX | BAIXA | Baixa |
+| BUG-013 | Pendente | Formulário de livro não tem botão de cancelar | Falta de botão | BAIXA | Baixa |
+| BUG-014 | Pendente | Filtro do catálogo não tem botão para limpar | Falta de botão | BAIXA | Baixa |
+| BUG-015 | Pendente | Cadastro aceita o campo "role" do corpo da requisição | Autorização | CRÍTICA | Média |
+| BUG-016 | Pendente | Qualquer usuário autenticado lê o empréstimo de qualquer outra pessoa pelo id | Autorização | ALTA | Média |
+| BUG-017 | Pendente | Edição de livro aceita available_copies maior que total_copies | Validação | MÉDIA | Baixa |
+| BUG-018 | Pendente | Empréstimo de livro inexistente derruba erro 500 | Tratamento de erro | MÉDIA | Baixa |
 
 ### Distribuição por severidade
 
 | Severidade | Total | Ainda plantados |
 |---|---:|---:|
-| CRÍTICA | 1 | 1 |
-| ALTA | 4 | 4 |
-| MÉDIA | 4 | 4 |
-| BAIXA | 1 | 1 |
+| CRÍTICA | 2 | 2 |
+| ALTA | 5 | 5 |
+| MÉDIA | 6 | 6 |
+| BAIXA | 5 | 5 |
 
 ---
 
@@ -288,5 +296,208 @@ A consulta usa SELECT * FROM users e devolve o registro inteiro no JSON, sem exc
 **Resultado atual:** O hash bcrypt da senha de todos os usuários aparece no payload da resposta.
 
 **Como se chega nele:** Inspecionar o payload de resposta, não só o que a tela renderiza.
+
+---
+
+## BUG-011 — Botão "Próxima" da paginação nunca desativa
+
+**Situação:** Pendente · **Área:** UI/UX · **Severidade:** BAIXA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+A API não devolve o total de registros nem indica se há próxima página, e o botão "Proxima" só incrementa o state `page` sem checar `books.length`. O front não tem como saber quando parar.
+
+**Onde está**
+
+- `frontend/src/pages/BooksPage.tsx`
+
+**Como reproduzir**
+
+1. Abrir o catálogo com poucos livros cadastrados (ex.: 5, com limite de 8 por página).
+2. Clicar em "Proxima" repetidas vezes.
+
+**Resultado esperado:** O botão "Proxima" desativa (ou soma nada) quando a página atual já não tem mais livros.
+
+**Resultado atual:** O botão continua clicável indefinidamente, levando a páginas vazias sem nenhum aviso de que acabaram os resultados.
+
+**Como se chega nele:** Navegar a paginação do catálogo além do número real de páginas.
+
+---
+
+## BUG-012 — Botão "Pegar emprestado" desabilitado não explica o motivo
+
+**Situação:** Pendente · **Área:** UI/UX · **Severidade:** BAIXA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+O botão recebe `disabled={book.available_copies <= 0}` mas mantém o mesmo texto "Pegar emprestado", sem tooltip, título ou mensagem explicando que o livro está sem cópias disponíveis.
+
+**Onde está**
+
+- `frontend/src/pages/BooksPage.tsx`
+
+**Como reproduzir**
+
+1. Abrir o catálogo e localizar um livro com "0 / N disponíveis".
+2. Observar o botão "Pegar emprestado" desse livro.
+
+**Resultado esperado:** Algum indício visível (texto, tooltip ou troca de rótulo) explicando por que a ação está bloqueada.
+
+**Resultado atual:** O botão só aparece acinzentado, indistinguível de uma falha de carregamento para quem não reparar nos números de cópias.
+
+**Como se chega nele:** Comparar o comportamento visual de um livro esgotado com o de um livro disponível.
+
+---
+
+## BUG-013 — Formulário de livro não tem botão de cancelar
+
+**Situação:** Pendente · **Área:** Falta de botão · **Severidade:** BAIXA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+O formulário de criar/editar livro só tem o botão "Salvar". Não existe link nem botão "Cancelar" para voltar ao catálogo sem submeter.
+
+**Onde está**
+
+- `frontend/src/pages/BookFormPage.tsx`
+
+**Como reproduzir**
+
+1. Logar como admin.
+2. Abrir "Novo Livro" ou "Editar" em qualquer livro.
+3. Procurar uma forma de sair do formulário sem preencher e salvar.
+
+**Resultado esperado:** Um botão ou link "Cancelar" que volte ao catálogo sem alterar nada.
+
+**Resultado atual:** A única saída é o link "Catálogo" da barra de navegação ou o botão voltar do navegador — nenhum controle dentro do próprio formulário.
+
+**Como se chega nele:** Tentar sair de um formulário de edição aberto por engano.
+
+---
+
+## BUG-014 — Filtro do catálogo não tem botão para limpar
+
+**Situação:** Pendente · **Área:** Falta de botão · **Severidade:** BAIXA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+O formulário de filtro só tem o botão "Filtrar". Depois de buscar por título/categoria, não há botão "Limpar" — é preciso apagar o texto manualmente dos dois campos.
+
+**Onde está**
+
+- `frontend/src/pages/BooksPage.tsx`
+
+**Como reproduzir**
+
+1. Preencher "Buscar por título ou autor" e "Categoria" no catálogo.
+2. Clicar em "Filtrar".
+3. Tentar voltar a ver todos os livros sem apagar os campos manualmente.
+
+**Resultado esperado:** Um botão "Limpar filtros" que reseta busca e categoria de uma vez.
+
+**Resultado atual:** Não existe esse botão; o usuário precisa apagar cada campo manualmente e filtrar de novo.
+
+**Como se chega nele:** Aplicar um filtro no catálogo e tentar removê-lo.
+
+---
+
+## BUG-015 — Cadastro aceita o campo "role" do corpo da requisição
+
+**Situação:** Pendente · **Área:** Autorização · **Severidade:** CRÍTICA · **Dificuldade:** Média
+
+**Por que acontece**
+
+O handler desestrutura `role` de req.body e usa `role || 'member'` no INSERT, em vez de sempre gravar 'member'. Qualquer pessoa que descubra o campo consegue se autopromover a admin no próprio cadastro.
+
+**Onde está**
+
+- `src/controllers/authController.js → register()`
+
+**Como reproduzir**
+
+1. POST /auth/register com {"name":"Invasor","email":"invasor@exemplo.com","password":"123456","role":"admin"}.
+2. Logar com essa conta e chamar uma rota restrita a admin (ex.: GET /users ou DELETE /books/:id).
+
+**Resultado esperado:** O campo role do corpo deve ser ignorado — todo cadastro público nasce como 'member'.
+
+**Resultado atual:** A conta é criada com role 'admin' e tem acesso total às rotas administrativas.
+
+**Como se chega nele:** Enviar campos extras e inesperados no corpo de um cadastro público, não só os campos do formulário.
+
+---
+
+## BUG-016 — Qualquer usuário autenticado lê o empréstimo de qualquer outra pessoa pelo id
+
+**Situação:** Pendente · **Área:** Autorização · **Severidade:** ALTA · **Dificuldade:** Média
+
+**Por que acontece**
+
+getById() busca o empréstimo só pelo id e devolve direto, sem comparar loan.user_id com req.user.id nem checar se req.user é admin — o mesmo tipo de falha do BUG-003, mas na leitura em vez da devolução.
+
+**Onde está**
+
+- `src/controllers/loanController.js → getById()`
+
+**Como reproduzir**
+
+1. Logar como usuário A e criar um empréstimo — anotar o id retornado.
+2. Logar como usuário B.
+3. Com o token de B, chamar GET /loans/<id-do-emprestimo-de-A>.
+
+**Resultado esperado:** 403 — só o dono do empréstimo (ou um admin) pode consultá-lo.
+
+**Resultado atual:** Os dados completos do empréstimo de A (incluindo book_id e datas) são retornados para B normalmente.
+
+**Como se chega nele:** Trocar o id na rota de detalhe de empréstimo entre contas diferentes, não só testar a listagem.
+
+---
+
+## BUG-017 — Edição de livro aceita available_copies maior que total_copies
+
+**Situação:** Pendente · **Área:** Validação · **Severidade:** MÉDIA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+O UPDATE grava os dois campos direto do corpo da requisição sem comparar os valores entre si nem com o estoque já emprestado — dá para inflar available_copies por PUT, sem precisar devolver nenhum empréstimo.
+
+**Onde está**
+
+- `src/controllers/bookController.js → update()`
+
+**Como reproduzir**
+
+1. Logar como admin.
+2. PUT /books/:id de um livro com total_copies=2, enviando {"available_copies":50,...}.
+
+**Resultado esperado:** Erro 400 — available_copies nunca pode ultrapassar total_copies.
+
+**Resultado atual:** O livro passa a mostrar 50 cópias disponíveis de um total de 2.
+
+**Como se chega nele:** Comparar os dois campos de estoque depois de editar um livro diretamente, não só depois de um empréstimo/devolução.
+
+---
+
+## BUG-018 — Empréstimo de livro inexistente derruba erro 500
+
+**Situação:** Pendente · **Área:** Tratamento de erro · **Severidade:** MÉDIA · **Dificuldade:** Baixa
+
+**Por que acontece**
+
+O handler busca o livro e usa `book.id` direto, sem checar se a consulta devolveu undefined quando o bookId não existe — mesmo padrão de omissão do BUG-009, mas aqui gera uma exceção não tratada em vez de um corpo vazio.
+
+**Onde está**
+
+- `src/controllers/loanController.js → create()`
+
+**Como reproduzir**
+
+1. Logar como membro.
+2. POST /loans com {"bookId":99999} (id que não existe).
+
+**Resultado esperado:** 404 Not Found informando que o livro não existe.
+
+**Resultado atual:** 500 Internal Server Error, sem nenhuma mensagem útil para quem está integrando com a API.
+
+**Como se chega nele:** Tentar emprestar um livro usando um id inventado.
 
 ---

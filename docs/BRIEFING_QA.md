@@ -21,6 +21,7 @@ Esta é uma biblioteca digital: livros têm cópias disponíveis, usuários pode
 5. **Fluxo de devolução** — devolver um empréstimo, devolver o mesmo empréstimo de novo, tentar devolver o empréstimo de outra pessoa.
 6. **Datas** — compare `loan_date` e `due_date` retornados num empréstimo novo. Faz sentido?
 7. **Exposição de dados** — inspecione os payloads de resposta. Algum campo sensível aparece onde não devia?
+8. **Interface (UI/UX)** — além da API, repare na tela: botões desabilitados sem explicação, ações sem confirmação ou sem jeito de cancelar, paginação que não sabe quando parar, campos de autocadastro que aceitam mais do que deveriam.
 
 ## Como registrar os achados
 Para cada defeito encontrado, registre: rota/método, payload usado, resposta obtida, resposta esperada, e severidade sugerida. Use o mesmo formato de roteiro que já usamos nos ciclos do TaskFlow.

@@ -297,6 +297,93 @@ main {
   color: var(--success);
 }
 
+.gabarito-placar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.gabarito-placar-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gabarito-placar-total span {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.gabarito-placar-total strong {
+  font-size: 22px;
+}
+
+.gabarito-placar-total em {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--text);
+  margin-left: 2px;
+}
+
+.gabarito-placar-barra {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.2);
+  margin-bottom: 10px;
+}
+
+.fatia {
+  height: 100%;
+}
+
+.fatia-corrigido {
+  background: var(--success);
+}
+
+.fatia-parcial {
+  background: #d69614;
+}
+
+.fatia-encontrado {
+  background: var(--accent);
+}
+
+.gabarito-placar-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.ponto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-right: 5px;
+}
+
+.ponto-corrigido {
+  background: var(--success);
+}
+
+.ponto-encontrado {
+  background: var(--accent);
+}
+
+.ponto-parcial {
+  background: #d69614;
+}
+
+.ponto-pendente {
+  background: #d64545;
+}
+
 .gabarito-list {
   list-style: none;
   padding: 0;

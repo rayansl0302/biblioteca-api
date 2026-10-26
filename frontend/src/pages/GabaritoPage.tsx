@@ -56,14 +56,50 @@ export function GabaritoPage() {
     );
   }
 
-  const restantes = bugs.filter((bug) => situacao(bug) !== 'corrigido').length;
+  const placar = {
+    corrigido: bugs.filter((b) => situacao(b) === 'corrigido').length,
+    encontrado: bugs.filter((b) => situacao(b) === 'encontrado').length,
+    parcial: bugs.filter((b) => situacao(b) === 'parcial').length,
+    pendente: bugs.filter((b) => situacao(b) === 'pendente').length,
+  };
+  const restantes = placar.pendente + placar.parcial + placar.encontrado;
 
   return (
     <div className="page gabarito">
       <h1>Gabarito interno</h1>
       <p className="center-message" style={{ textAlign: 'left' }}>
-        {restantes} de {bugs.length} defeitos ainda plantados. Documento interno — nao entregar ao QA avaliado.
+        Documento interno — nao entregar ao QA avaliado.
       </p>
+
+      <section className="gabarito-placar">
+        <div className="gabarito-placar-total">
+          <span>Ainda plantados</span>
+          <strong>
+            {restantes}
+            <em> de {bugs.length}</em>
+          </strong>
+        </div>
+        <div className="gabarito-placar-barra" aria-hidden="true">
+          <span
+            className="fatia fatia-corrigido"
+            style={{ width: `${(placar.corrigido / bugs.length) * 100}%` }}
+          />
+          <span
+            className="fatia fatia-parcial"
+            style={{ width: `${(placar.parcial / bugs.length) * 100}%` }}
+          />
+          <span
+            className="fatia fatia-encontrado"
+            style={{ width: `${(placar.encontrado / bugs.length) * 100}%` }}
+          />
+        </div>
+        <div className="gabarito-placar-legenda">
+          <span><i className="ponto ponto-corrigido" /> {placar.corrigido} corrigidos</span>
+          <span><i className="ponto ponto-encontrado" /> {placar.encontrado} encontrados</span>
+          <span><i className="ponto ponto-parcial" /> {placar.parcial} {placar.parcial === 1 ? 'parcial' : 'parciais'}</span>
+          <span><i className="ponto ponto-pendente" /> {placar.pendente} pendentes</span>
+        </div>
+      </section>
 
       <div className="filters">
         <input
