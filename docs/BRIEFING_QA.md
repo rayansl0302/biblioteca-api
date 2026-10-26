@@ -1,11 +1,12 @@
 # Briefing QA — Biblioteca API
 
 ## Contexto
-Esta é uma API REST de uma biblioteca digital: livros têm cópias disponíveis, usuários podem pegar livros emprestados e devolvê-los. O objetivo deste ciclo é testar a API diretamente (via Postman, Insomnia, Thunder Client, curl ou scripts automatizados), sem depender de uma interface visual.
+Esta é uma biblioteca digital: livros têm cópias disponíveis, usuários podem pegar livros emprestados e devolvê-los. Existe um front-end web (React), mas o foco deste ciclo é testar a API REST que o sustenta — direto via Postman, Insomnia, Thunder Client, curl ou scripts automatizados, sem depender só da interface visual. Use o front para montar cenários rapidamente, mas confirme sempre a resposta real da API (aba Network do navegador) antes de considerar um comportamento correto.
 
 ## Ambiente
-- Base URL: `http://localhost:3333`
-- Autenticação: `POST /auth/login` retorna um `token` JWT. Envie-o em `Authorization: Bearer <token>` nas rotas que exigem login.
+- API: `http://localhost:3333`
+- Front-end web: `http://localhost:5174`
+- Autenticação: `POST /auth/login` retorna um `token` JWT. Envie-o em `Authorization: Bearer <token>` nas rotas que exigem login (o front já faz isso sozinho).
 - Usuários de teste: veja o [README](../README.md).
 
 ## Papéis
