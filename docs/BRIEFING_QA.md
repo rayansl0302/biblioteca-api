@@ -24,3 +24,5 @@ Esta é uma biblioteca digital: livros têm cópias disponíveis, usuários pode
 
 ## Como registrar os achados
 Para cada defeito encontrado, registre: rota/método, payload usado, resposta obtida, resposta esperada, e severidade sugerida. Use o mesmo formato de roteiro que já usamos nos ciclos do TaskFlow.
+
+Veja também o [Guia de testes exploratórios](GUIA_EXPLORATORIO_QA.md) para técnicas e perguntas que ajudam a ir além do óbvio.

@@ -47,8 +47,15 @@ Todas as rotas de empréstimo exigem token JWT (`Authorization: Bearer <token>`)
 BibliotecaAPI/
 ├── src/        # backend (Express + SQLite)
 ├── frontend/   # web app (React + Vite) que consome a API
-└── docs/       # briefing e gabarito do ciclo de QA
+├── docs/       # briefing, guia exploratorio e gabarito (fonte: docs/gabarito.json)
+└── scripts/    # gerador do QA_GABARITO.md a partir do gabarito.json
 ```
 
 ## Para o QA
-Veja [docs/BRIEFING_QA.md](docs/BRIEFING_QA.md) para o roteiro de exploração — dá pra testar tanto pela interface web quanto direto na API (Postman/Insomnia/curl). **Não leia `docs/GABARITO.md`** antes de testar — é o material do responsável pelo treinamento.
+- [docs/BRIEFING_QA.md](docs/BRIEFING_QA.md) — contexto, ambiente e o que explorar neste ciclo.
+- [docs/GUIA_EXPLORATORIO_QA.md](docs/GUIA_EXPLORATORIO_QA.md) — técnicas gerais de teste exploratório em API.
+
+**Não leia `docs/gabarito.json` nem `QA_GABARITO.md`** antes de testar — são o material interno do responsável pelo treinamento, com o mapa de todos os defeitos inseridos propositalmente. Depois de registrar um ciclo de testes, regenere o markdown com:
+```bash
+node scripts/gerar-gabarito-md.mjs
+```

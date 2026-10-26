@@ -1,0 +1,201 @@
+{
+  "titulo": "Gabarito interno — Biblioteca API",
+  "descricao": "Mapa dos defeitos inseridos propositalmente na API e no front-end da Biblioteca Digital. Material interno: não entregar ao profissional avaliado.",
+  "bugs": [
+    {
+      "id": "BUG-001",
+      "titulo": "Cadastro de livro aceita campos vazios e valores negativos",
+      "area": "Validação",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/bookController.js → create()"
+      ],
+      "porque": "O handler monta o INSERT direto a partir de req.body: não checa se title/author vieram preenchidos nem se total_copies é um número válido (>= 0) antes de gravar.",
+      "passos": [
+        "Logar como admin e obter o token.",
+        "POST /books com {\"title\":\"\",\"author\":\"\",\"total_copies\":-5}."
+      ],
+      "esperado": "Erro 400 informando os campos obrigatórios e a faixa válida de total_copies.",
+      "atual": "Livro é criado com título e autor vazios e total_copies negativo.",
+      "descoberta": "Teste de campo obrigatório vazio e de valor negativo em campo numérico.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-002",
+      "titulo": "Empréstimo não verifica cópias disponíveis",
+      "area": "Regra de negócio",
+      "severidade": "ALTA",
+      "dificuldade": "Média",
+      "local": [
+        "src/controllers/loanController.js → create()"
+      ],
+      "porque": "O handler cria o empréstimo e decrementa available_copies sem antes checar se o valor é maior que zero, então o estoque pode ficar negativo.",
+      "passos": [
+        "Identificar (ou forçar via PUT /books/:id) um livro com available_copies = 0.",
+        "Logar como membro e POST /loans com esse bookId.",
+        "Repetir a chamada mais de uma vez."
+      ],
+      "esperado": "Erro 409/400 quando não há cópias disponíveis.",
+      "atual": "O empréstimo é criado normalmente e available_copies vai a zero e depois a valores negativos.",
+      "descoberta": "Tentar emprestar um livro sem estoque disponível.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-003",
+      "titulo": "IDOR: qualquer usuário devolve o empréstimo de outra pessoa",
+      "area": "Autorização",
+      "severidade": "ALTA",
+      "dificuldade": "Média",
+      "local": [
+        "src/controllers/loanController.js → returnLoan()",
+        "src/routes/loanRoutes.js"
+      ],
+      "porque": "A rota PUT /loans/:id/return só passa pelo middleware authenticate. O controller nunca compara o user_id do empréstimo com o usuário do token, então qualquer conta logada pode devolver o empréstimo de qualquer outra.",
+      "passos": [
+        "Logar como usuário A e pegar um livro emprestado — anotar o id do empréstimo retornado.",
+        "Logar como usuário B.",
+        "Com o token de B, chamar PUT /loans/<id-do-emprestimo-de-A>/return."
+      ],
+      "esperado": "403 — só o dono do empréstimo (ou um admin) pode devolvê-lo.",
+      "atual": "A devolução é processada normalmente, mesmo sendo de outro usuário.",
+      "descoberta": "Trocar o id do empréstimo entre contas diferentes (comparar com o comportamento de /tasks/:id em outros projetos).",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-004",
+      "titulo": "Membro comum consegue excluir livros",
+      "area": "Autorização",
+      "severidade": "CRÍTICA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/routes/bookRoutes.js"
+      ],
+      "porque": "POST /books e PUT /books/:id aplicam authenticate + requireAdmin corretamente, mas a rota DELETE /books/:id só recebeu authenticate — o middleware requireAdmin foi esquecido nela.",
+      "passos": [
+        "Logar com uma conta de papel member.",
+        "Chamar DELETE /books/:id para qualquer livro existente."
+      ],
+      "esperado": "403 — exclusão restrita a administradores.",
+      "atual": "O livro é excluído com sucesso (204 No Content), mesmo com uma conta não-admin.",
+      "descoberta": "Testar cada rota de /books com token de membro comum, não só com admin.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-005",
+      "titulo": "Devolver o mesmo empréstimo duas vezes infla o estoque",
+      "area": "Integridade de dados",
+      "severidade": "ALTA",
+      "dificuldade": "Média",
+      "local": [
+        "src/controllers/loanController.js → returnLoan()"
+      ],
+      "porque": "O handler não verifica se o empréstimo já está com status 'returned' antes de processar — cada chamada incrementa available_copies e grava um novo return_date.",
+      "passos": [
+        "Pegar um livro emprestado.",
+        "Chamar PUT /loans/:id/return.",
+        "Chamar PUT /loans/:id/return de novo, com o mesmo id.",
+        "Comparar available_copies do livro com total_copies."
+      ],
+      "esperado": "A segunda chamada deve falhar (empréstimo já devolvido) e available_copies nunca deve ultrapassar total_copies.",
+      "atual": "A segunda devolução é aceita e available_copies fica maior que total_copies.",
+      "descoberta": "Repetir a mesma ação de devolução mais de uma vez.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-006",
+      "titulo": "Cadastro sem validação de e-mail/senha e erro 500 em duplicidade",
+      "area": "Validação / Tratamento de erro",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/authController.js → register()"
+      ],
+      "porque": "Não há checagem de formato de e-mail nem de tamanho mínimo de senha antes do INSERT. Como a coluna email é UNIQUE, um cadastro duplicado lança uma exceção do SQLite que sobe sem tratamento específico até o error handler genérico, virando 500 em vez de um 409 tratado.",
+      "passos": [
+        "POST /auth/register com um e-mail já cadastrado (ex.: maria@exemplo.com).",
+        "POST /auth/register com e-mail 'nao-e-email' e senha '1'."
+      ],
+      "esperado": "409 Conflict para e-mail duplicado; 400 Bad Request para formato de e-mail ou senha inválidos.",
+      "atual": "500 Internal Server Error no cadastro duplicado; e-mail e senha fracos são aceitos sem aviso.",
+      "descoberta": "Cadastro duplicado e teste de formato/força de senha.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-007",
+      "titulo": "Paginação de livros sem limite máximo",
+      "area": "Resource consumption",
+      "severidade": "BAIXA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/bookController.js → list()"
+      ],
+      "porque": "O valor de limit vem direto de req.query sem nenhum teto — um client pode pedir um número arbitrariamente grande e receber a tabela inteira de uma vez.",
+      "passos": [
+        "GET /books?limit=999999.",
+        "Comparar a quantidade de itens retornados com o total de livros cadastrados."
+      ],
+      "esperado": "O backend aplica um limite máximo (ex.: 50 ou 100 itens por página), ignorando valores acima disso.",
+      "atual": "Todos os registros voltam de uma vez, sem paginação real.",
+      "descoberta": "Testar valores de fronteira no parâmetro limit.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-008",
+      "titulo": "Empréstimo já nasce vencido (due_date = loan_date)",
+      "area": "Regra de negócio",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/loanController.js → create()"
+      ],
+      "porque": "dueDate é instanciado como new Date(loanDate) e gravado assim, sem somar os dias de prazo de empréstimo.",
+      "passos": [
+        "Logar como membro e criar um empréstimo (POST /loans).",
+        "Comparar os campos loan_date e due_date na resposta — também visível na tabela de 'Meus Empréstimos' no front-end."
+      ],
+      "esperado": "due_date deve ser loan_date mais um prazo (ex.: 7 dias).",
+      "atual": "due_date é idêntico a loan_date, segundo a segundo.",
+      "descoberta": "Comparar as duas datas retornadas por um empréstimo recém-criado.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-009",
+      "titulo": "Livro inexistente retorna 200 em vez de 404",
+      "area": "Tratamento de erro",
+      "severidade": "MÉDIA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/bookController.js → getById()"
+      ],
+      "porque": "O resultado de db.prepare(...).get(id) pode ser undefined quando o id não existe, mas o handler responde res.json(book) sem checar isso antes.",
+      "passos": [
+        "GET /books/99999 (id que não existe)."
+      ],
+      "esperado": "404 Not Found com uma mensagem de erro.",
+      "atual": "200 OK com corpo vazio/nulo.",
+      "descoberta": "Consultar um id que não existe na base.",
+      "status": "pendente"
+    },
+    {
+      "id": "BUG-010",
+      "titulo": "Listagem de usuários expõe o password_hash",
+      "area": "Exposição de dados sensíveis",
+      "severidade": "ALTA",
+      "dificuldade": "Baixa",
+      "local": [
+        "src/controllers/userController.js → list()"
+      ],
+      "porque": "A consulta usa SELECT * FROM users e devolve o registro inteiro no JSON, sem excluir o campo password_hash. A tela de usuários do front-end não exibe o campo, mas ele continua trafegando na resposta da API.",
+      "passos": [
+        "Logar como admin.",
+        "GET /users.",
+        "Inspecionar o corpo da resposta (aba Network do navegador, ou diretamente no Postman/Insomnia)."
+      ],
+      "esperado": "A resposta não deve incluir password_hash nem qualquer outro dado sensível de autenticação.",
+      "atual": "O hash bcrypt da senha de todos os usuários aparece no payload da resposta.",
+      "descoberta": "Inspecionar o payload de resposta, não só o que a tela renderiza.",
+      "status": "pendente"
+    }
+  ]
+}
