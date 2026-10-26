@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const userRoutes = require('./routes/userRoutes');
+const gabaritoRoutes = require('./routes/gabaritoRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use('/auth', authRoutes);
 app.use('/books', bookRoutes);
 app.use('/loans', loanRoutes);
 app.use('/users', userRoutes);
+app.use('/gabarito', gabaritoRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Rota nao encontrada' });

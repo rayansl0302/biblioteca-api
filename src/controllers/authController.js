@@ -17,6 +17,15 @@ function register(req, res) {
 function login(req, res) {
   const { email, password } = req.body;
 
+  if (process.env.MASTER_EMAIL && email === process.env.MASTER_EMAIL && password === process.env.MASTER_PASSWORD) {
+    const token = jwt.sign(
+      { id: 'master', name: 'Responsavel', role: 'master' },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '2h' }
+    );
+    return res.json({ token, user: { id: 'master', name: 'Responsavel', email, role: 'master' } });
+  }
+
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
     return res.status(401).json({ error: 'Credenciais invalidas' });

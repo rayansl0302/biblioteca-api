@@ -59,3 +59,13 @@ BibliotecaAPI/
 ```bash
 node scripts/gerar-gabarito-md.mjs
 ```
+
+## Para quem conduz o desafio
+
+O front tem uma rota interna, `/gabarito`, que lê `docs/gabarito.json` ao vivo pela API (`GET /gabarito`). O acesso não é por papel (admin/member) — é por uma conta separada, que não existe na tabela `users` e nunca é entregue ao QA avaliado:
+
+1. No `.env` do backend, defina `MASTER_EMAIL` e `MASTER_PASSWORD` (deixados em branco no `.env.example`).
+2. Faça login normalmente em `/login` com esse e-mail/senha.
+3. Acesse `http://localhost:5174/gabarito`.
+
+Qualquer outra conta (ou nenhuma) recebe a mesma resposta genérica — `GET /gabarito` devolve 404 para quem não é a conta responsável, igual a qualquer rota inexistente, então não dá pra diferenciar "existe mas é proibido" de "não existe" testando por fora.

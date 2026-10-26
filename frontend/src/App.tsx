@@ -7,6 +7,7 @@ import { BooksPage } from './pages/BooksPage';
 import { BookFormPage } from './pages/BookFormPage';
 import { LoansPage } from './pages/LoansPage';
 import { UsersPage } from './pages/UsersPage';
+import { GabaritoPage } from './pages/GabaritoPage';
 import './App.css';
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
       <Navbar />
       <main>
         <Routes>
+          {/* Rota interna do desafio — o acesso e controlado pelo backend (GET /gabarito exige conta master) */}
+          <Route path="/gabarito" element={<GabaritoPage />} />
           <Route path="/" element={<BooksPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

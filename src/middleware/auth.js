@@ -23,4 +23,11 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { authenticate, requireAdmin };
+function requireMaster(req, res, next) {
+  if (req.user?.role !== 'master') {
+    return res.status(404).json({ error: 'Rota nao encontrada' });
+  }
+  next();
+}
+
+module.exports = { authenticate, requireAdmin, requireMaster };

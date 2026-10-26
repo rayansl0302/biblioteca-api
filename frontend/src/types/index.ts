@@ -29,3 +29,26 @@ export interface Loan {
   book_title?: string;
   user_name?: string;
 }
+
+export type BugStatus = 'corrigido' | 'encontrado' | 'parcial' | 'pendente';
+
+export interface Bug {
+  id: string;
+  titulo: string;
+  area: string;
+  severidade: 'CRÍTICA' | 'ALTA' | 'MÉDIA' | 'BAIXA';
+  dificuldade: 'Alta' | 'Média' | 'Baixa';
+  local: string[];
+  porque: string;
+  passos: string[];
+  esperado: string;
+  atual: string;
+  descoberta?: string;
+  status?: BugStatus;
+}
+
+export interface Gabarito {
+  titulo: string;
+  descricao: string;
+  bugs: Bug[];
+}
