@@ -7,6 +7,7 @@ import { BooksPage } from './pages/BooksPage';
 import { BookFormPage } from './pages/BookFormPage';
 import { LoansPage } from './pages/LoansPage';
 import { UsersPage } from './pages/UsersPage';
+import { UserFormPage } from './pages/UserFormPage';
 import { GabaritoPage } from './pages/GabaritoPage';
 import './App.css';
 
@@ -50,6 +51,22 @@ function App() {
             element={
               <ProtectedRoute requireRole="admin">
                 <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/new"
+            element={
+              <ProtectedRoute requireRole="admin">
+                <UserFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users/:id/edit"
+            element={
+              <ProtectedRoute requireRole="admin">
+                <UserFormPage />
               </ProtectedRoute>
             }
           />
