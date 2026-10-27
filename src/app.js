@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
 
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const userRoutes = require('./routes/userRoutes');
 const gabaritoRoutes = require('./routes/gabaritoRoutes');
+const openapiSpec = require('./docs/openapi');
 
 const app = express();
 
@@ -13,6 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+app.get('/docs.json', (req, res) => res.json(openapiSpec));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 
 app.use('/auth', authRoutes);
 app.use('/books', bookRoutes);
